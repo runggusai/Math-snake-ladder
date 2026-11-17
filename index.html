@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Snake & Ladder</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --dark: #1e293b;
+            --light: #f8fafc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 { text-align: center; margin-bottom: 30px; }
+
+        /* Home Page: 3 Category Cards */
+        #home-page {
+            display: flex;
+            gap: 25px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 50px;
+        }
+
+        .category-card {
+            background: white;
+            border: 3px solid var(--primary);
+            border-radius: 15px;
+            width: 280px;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            padding: 20px;
+        }
+
+        .category-card:hover {
+            transform: translateY(-8px);
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 10px 15px rgba(37, 99, 235, 0.3);
+        }
+
+        .category-card h2 { margin: 0 0 10px 0; font-size: 1.5rem; }
+        .category-card p { margin: 0; opacity: 0.8; }
+
+        /* Game Page: 100 Boxes Grid */
+        #game-page {
+            display: none;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .btn-nav {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95rem;
+            background-color: #e2e8f0;
+            color: var(--dark);
+            transition: background 0.2s;
+        }
+
+        .btn-nav:hover { background-color: #cbd5e1; }
+        .btn-reset { background-color: #fee2e2; color: var(--danger); }
+        .btn-reset:hover { background-color: #fecaca; }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 10px;
+        }
+
+        .box {
+            aspect-ratio: 1;
+            background-color: var(--primary);
+            color: white;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .box:hover:not(:disabled) {
+            transform: scale(1.05);
+            background-color: #1d4ed8;
+        }
+
+        .box:disabled {
+            background-color: #94a3b8;
+            color: #e2e8f0;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+
+        /* Question Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 700px;
+            text-align: center;
+            box-shadow: 0 20px 25px rgba(0,0,0,0.2);
+        }
+
+        .timer-badge {
+            display: inline-block;
+            background: #fef3c7;
+            color: #d97706;
+            font-size: 2rem;
+            font-weight: bold;
+            padding: 10px 25px;
+            border-radius: 50px;
+            margin-bottom: 20px;
+            border: 2px solid #f59e0b;
+        }
+
+        .timer-danger {
+            background: #fee2e2;
+            color: var(--danger);
+            border-color: var(--danger);
+            animation: pulse 0.8s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .question-text {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 25px 0;
+            line-height: 1.4;
+        }
+
+        .answer-key {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            color: #475569;
+            margin-bottom: 30px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .btn-action {
+            padding: 15px 35px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .btn-true { background-color: var(--success); }
+        .btn-true:hover { background-color: #15803d; }
+        .btn-false { background-color: var(--danger); }
+        .btn-false:hover { background-color: #b91c1c; }
+
+        /* Result Banner */
+        #result-banner {
+            display: none;
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PAGE 1: CATEGORY SELECTION -->
+    <div id="home-page">
+        <div class="category-card" onclick="openCategory(0)">
+            <h2>Elimination Round</h2>
+            <p>SET 1</p>
+        </div>
+        <div class="category-card" onclick="openCategory(1)">
+            <h2>Elimination Round</h2>
+            <p>SET 2</p>
+        </div>
+        <div class="category-card" onclick="openCategory(2)">
+            <h2>Final Round</h2>
+            <p>CHAMPIONSHIP</p>
+        </div>
+    </div>
+
+    <!-- PAGE 2: 100 QUESTION BOXES -->
+    <div id="game-page">
+        <div class="nav-header">
+            <button class="btn-nav" onclick="goHome()">🏠 Main Menu</button>
+            <div>
+                <button class="btn-nav" id="btn-prev" onclick="navigateSet(-1)">⬅️ Previous Set</button>
+                <span id="category-title" style="font-weight: bold; font-size: 1.3rem; margin: 0 15px;"></span>
+                <button class="btn-nav" id="btn-next" onclick="navigateSet(1)">Next Set ➡️</button>
+            </div>
+            <button class="btn-nav btn-reset" onclick="resetCurrentSet()">🔄 Reset Boxes</button>
+        </div>
+
+        <div class="grid-container" id="grid-container"></div>
+    </div>
+
+    <!-- QUESTION POP-UP MODAL -->
+    <div class="modal-overlay" id="question-modal">
+        <div class="modal-content">
+            <div id="modal-box-number" style="font-weight: bold; color: #64748b;">BOX #1</div>
+            <div class="timer-badge" id="timer-display">30</div>
+            
+            <div class="question-text" id="question-text">Question will appear here...</div>
+            
+            <!-- Committee Answer Key Guide -->
+            <!-- Answer Key Hidden -->
+<div class="answer-key" id="answer-key" style="display: none;"></div>
+
+            <div class="action-buttons" id="panitia-controls">
+                <button class="btn-action btn-true" onclick="handleResult('CORRECT')">✅ CORRECT (Roll Dice)</button>
+                <button class="btn-action btn-false" onclick="handleResult('INCORRECT')">❌ INCORRECT (Stay)</button>
+            </div>
+
+            <div id="result-banner"></div>
+        </div>
+    </div>
+
+    <script>
+        // 1. CATEGORIES & QUESTION BANK
+        const categories = [
+            { id: 'set1', name: 'Elimination Round - Set 1' },
+            { id: 'set2', name: 'Elimination Round - Set 2' },
+            { id: 'final', name: 'Final Round' }
+        ];
+
+        // Sample Question Bank (100 questions per category)
+        const questionBank = {
+            set1: Array.from({ length: 100 }, (_, i) => ({
+                q: `Set 1 - Question #${i + 1}: What is the result of ${i + 2} × 5?`,
+                a: `${(i + 2) * 5}`
+            })),
+            set2: Array.from({ length: 100 }, (_, i) => ({
+                q: `Set 2 - Question #${i + 1}: Solve this math equation #${i + 1}`,
+                a: `Answer Set 2 #${i + 1}`
+            })),
+            final: Array.from({ length: 100 }, (_, i) => ({
+                q: `FINAL - Question #${i + 1}: Solve this advanced problem #${i + 1}`,
+                a: `Answer Final #${i + 1}`
+            }))
+        };
+
+        // You can customize specific questions manually like this:
+        
+questionBank.set1[0] = { q: "A right triangle has shorter sides 3 cm and 4 cm. Find the hypotenuse.", a: "5 cm" };
+questionBank.set1[1] = { q: "Calculate 2/3 ÷ 4.", a: "1/6" };
+questionBank.set1[2] = { q: "A right triangle has shorter sides 6 cm and 8 cm. Find the hypotenuse.", a: "10 cm" };
+questionBank.set1[3] = { q: "Factorise fully: 3x + 6.", a: "3(x + 2)" };
+questionBank.set1[4] = { q: "y is inversely proportional to x. If y=9 when x=8, find y when x=4.", a: "18.0" };
+questionBank.set1[5] = { q: "Share 55 in the ratio 4:7. What is the larger share?", a: "35" };
+questionBank.set1[6] = { q: "Find the gradient of the line through (2, 9) and (8, 3).", a: "-1" };
+questionBank.set1[7] = { q: "A right triangle has hypotenuse 13 cm and one side 5 cm. Find the other side.", a: "12 cm" };
+questionBank.set1[8] = { q: "Evaluate sin 90°.", a: "1" };
+questionBank.set1[9] = { q: "Find the 10th term of 4, 7, 10, 13, …", a: "31" };
+questionBank.set1[10] = { q: "There are 20 students; 12 study Art, 9 study Music, 4 study both. How many study at least one?", a: "17" };
+questionBank.set1[11] = { q: "Integrate 6x with respect to x.", a: "3x² + C" };
+questionBank.set1[12] = { q: "Calculate 5/6 - 1/3.", a: "1/2" };
+questionBank.set1[13] = { q: "Solve: 7x = 3x + 24.", a: "x = 6" };
+questionBank.set1[14] = { q: "A rectangle is 8 cm by 5 cm. Find its area.", a: "40 cm²" };
+questionBank.set1[15] = { q: "Integrate 4x³ with respect to x.", a: "x⁴ + C" };
+questionBank.set1[16] = { q: "Find 18% of 150.", a: "27.0" };
+questionBank.set1[17] = { q: "Find the gradient of the line through (2, 7) and (6, 15).", a: "2" };
+questionBank.set1[18] = { q: "Solve: 3x + 5 = 20.", a: "x = 5" };
+questionBank.set1[19] = { q: "Evaluate sin 30°.", a: "0.5" };
+questionBank.set1[20] = { q: "u = (7, 5), v = (2, 8). Find u - v.", a: "(5, -3)" };
+questionBank.set1[21] = { q: "Find the LCM of 9 and 15.", a: "45" };
+questionBank.set1[22] = { q: "A triangle has base 12 cm and height 7 cm. Find its area.", a: "42 cm²" };
+questionBank.set1[23] = { q: "Find the gradient of the line through (0, -2) and (5, 8).", a: "2" };
+questionBank.set1[24] = { q: "A circle has radius 7 cm. Find its circumference in terms of π.", a: "14π cm" };
+questionBank.set1[25] = { q: "Factorise fully: 2x + 10.", a: "2(x + 5)" };
+questionBank.set1[26] = { q: "Expand and simplify: 3(x + 2) + 5x.", a: "8x + 6" };
+questionBank.set1[27] = { q: "Find 7.5% of 800.", a: "60.0" };
+questionBank.set1[28] = { q: "Factorise fully: 6x + 18.", a: "6(x + 3)" };
+questionBank.set1[29] = { q: "A fair die is rolled. Find P(getting an even number).", a: "1/2" };
+questionBank.set1[30] = { q: "Calculate 1/3 + 1/4.", a: "7/12" };
+questionBank.set1[31] = { q: "Differentiate y = 5x³.", a: "dy/dx = 15x²" };
+questionBank.set1[32] = { q: "u = (2, 3), v = (4, -1). Find u + v.", a: "(6, 2)" };
+questionBank.set1[33] = { q: "Share 64 in the ratio 3:5. What is the larger share?", a: "40" };
+questionBank.set1[34] = { q: "Two parallel lines are cut by a transversal. One corresponding angle is 42°. Find the matching angle.", a: "42°" };
+questionBank.set1[35] = { q: "Factorise fully: 5x + 15.", a: "5(x + 3)" };
+questionBank.set1[36] = { q: "Solve: 2(x + 4) = 18.", a: "x = 5" };
+questionBank.set1[37] = { q: "Find the HCF of 18 and 30.", a: "6" };
+questionBank.set1[38] = { q: "Differentiate y = 3x² + 4x - 7.", a: "dy/dx = 6x + 4" };
+questionBank.set1[39] = { q: "Find the dot product of (2, 3) and (4, 1).", a: "11" };
+questionBank.set1[40] = { q: "y is inversely proportional to x. If y=8 when x=6, find y when x=3.", a: "16.0" };
+questionBank.set1[41] = { q: "Share 40 in the ratio 2:3. What is the larger share?", a: "24" };
+questionBank.set1[42] = { q: "y is directly proportional to x. If y=30 when x=12, find y when x=14.", a: "35.0" };
+questionBank.set1[43] = { q: "Find the gradient of y = x² - 3x at x = 2.", a: "1" };
+questionBank.set1[44] = { q: "Find the sum of the first 5 terms of 2, 4, 6, 8, …", a: "30" };
+questionBank.set1[45] = { q: "An isosceles triangle has a vertex angle of 64°. Find each base angle.", a: "58" };
+questionBank.set1[46] = { q: "Evaluate cos 60°.", a: "0.5" };
+questionBank.set1[47] = { q: "Share 49 in the ratio 5:2. What is the larger share?", a: "35" };
+questionBank.set1[48] = { q: "Evaluate tan 45°.", a: "1" };
+questionBank.set1[49] = { q: "Find 25% of 360.", a: "90.0" };
+questionBank.set1[50] = { q: "Find ∫₀² 2x dx.", a: "4" };
+questionBank.set1[51] = { q: "Evaluate 10^0.", a: "1" };
+questionBank.set1[52] = { q: "Expand and simplify: 5(x + 2) + 4x.", a: "9x + 10" };
+questionBank.set1[53] = { q: "A right triangle has shorter sides 7 cm and 24 cm. Find the hypotenuse.", a: "25 cm" };
+questionBank.set1[54] = { q: "Expand and simplify: 3(x + 4) + 6x.", a: "9x + 12" };
+questionBank.set1[55] = { q: "Find 12.5% of 480.", a: "60.0" };
+questionBank.set1[56] = { q: "Evaluate cos 0°.", a: "1" };
+questionBank.set1[57] = { q: "Evaluate 2^3 × 2^2.", a: "32" };
+questionBank.set1[58] = { q: "A = {a,b,c}, B = {b,c,d}. Find A ∪ B.", a: "{a, b, c, d}" };
+questionBank.set1[59] = { q: "Convert 150° to radians.", a: "5π/6" };
+questionBank.set1[60] = { q: "Solve: x² - 9 = 0.", a: "x = ±3" };
+questionBank.set1[61] = { q: "y is directly proportional to x. If y=35 when x=5, find y when x=7.", a: "49" };
+questionBank.set1[62] = { q: "Solve: (x - 2)(x + 5) = 0.", a: "x = 2 or -5" };
+questionBank.set1[63] = { q: "Share 80 in the ratio 7:3. What is the larger share?", a: "56" };
+questionBank.set1[64] = { q: "Factorise fully: 4x + 12.", a: "4(x + 3)" };
+questionBank.set1[65] = { q: "Differentiate y = 2x⁴ - x².", a: "dy/dx = 8x³ - 2x" };
+questionBank.set1[66] = { q: "Solve 2^x = 16.", a: "x = 4" };
+questionBank.set1[67] = { q: "Find 15% of 240.", a: "36.0" };
+questionBank.set1[68] = { q: "Evaluate 4^-1.", a: "1/4" };
+questionBank.set1[69] = { q: "Find the magnitude of vector (3, 4).", a: "5" };
+questionBank.set1[70] = { q: "Two angles on a straight line are 64° and x°. Find x.", a: "116" };
+questionBank.set1[71] = { q: "y is directly proportional to x. If y=24 when x=4, find y when x=6.", a: "36" };
+questionBank.set1[72] = { q: "Calculate 3/5 × 10.", a: "6" };
+questionBank.set1[73] = { q: "If a = (1, 2), find 3a.", a: "(3, 6)" };
+questionBank.set1[74] = { q: "Solve: x/3 + 4 = 9.", a: "x = 15" };
+questionBank.set1[75] = { q: "Find the HCF of 14 and 21.", a: "7" };
+questionBank.set1[76] = { q: "If n(A)=15, n(B)=12 and n(A∩B)=5, find n(A∪B).", a: "22" };
+questionBank.set1[77] = { q: "Solve: x² + 7x + 12 = 0.", a: "x = -3 or -4" };
+questionBank.set1[78] = { q: "Solve: x² - 4x = 0.", a: "x = 0 or 4" };
+questionBank.set1[79] = { q: "Calculate 0.75 as a fraction in simplest form.", a: "3/4" };
+questionBank.set1[80] = { q: "A right triangle has hypotenuse 17 cm and one side 8 cm. Find the other side.", a: "15 cm" };
+questionBank.set1[81] = { q: "Expand and simplify: 4(x + 1) + 7x.", a: "11x + 4" };
+questionBank.set1[82] = { q: "Differentiate y = 7x - 9.", a: "7" };
+questionBank.set1[83] = { q: "A cuboid measures 3 cm × 4 cm × 5 cm. Find its volume.", a: "60 cm³" };
+questionBank.set1[84] = { q: "Find the HCF of 24 and 36.", a: "12" };
+questionBank.set1[85] = { q: "Solve: x² - 5x + 6 = 0.", a: "x = 2 or 3" };
+questionBank.set1[86] = { q: "Angles in a triangle are 58°, 73° and y°. Find y.", a: "49" };
+questionBank.set1[87] = { q: "Evaluate 3^4 ÷ 3^2.", a: "9" };
+questionBank.set1[88] = { q: "Find ∫₁³ 2 dx.", a: "4" };
+questionBank.set1[89] = { q: "A trapezium has parallel sides 6 cm and 10 cm, height 4 cm. Find its area.", a: "32 cm²" };
+questionBank.set1[90] = { q: "Evaluate (5^2).", a: "25" };
+questionBank.set1[91] = { q: "Solve: 5x - 7 = 18.", a: "x = 5" };
+questionBank.set1[92] = { q: "Expand and simplify: 2(x + 5) + 3x.", a: "5x + 10" };
+questionBank.set1[93] = { q: "An exterior angle of a triangle equals the sum of two opposite interior angles. They are 53° and 71°. Find the exterior angle.", a: "124°" };
+questionBank.set1[94] = { q: "Solve sin θ = 1/2 for 0° ≤ θ ≤ 180°.", a: "θ = 30° or 150°" };
+questionBank.set1[95] = { q: "Find the gradient of the line through (1, 2) and (4, 11).", a: "3" };
+questionBank.set1[96] = { q: "Integrate (3x² + 2) with respect to x.", a: "x³ + 2x + C" };
+questionBank.set1[97] = { q: "A = {1,2,3,4}, B = {3,4,5}. Find A ∩ B.", a: "{3, 4}" };
+questionBank.set1[98] = { q: "Find the gradient of the line through (-1, 5) and (3, 13).", a: "2" };
+questionBank.set1[99] = { q: "Find the LCM of 8 and 12.", a: "24" };
+
+// Soal Set 2
+questionBank.set2[0] = { q: "Evaluate sin 90°.", a: "1" };
+questionBank.set2[1] = { q: "A right triangle has shorter sides 7 cm and 24 cm. Find the hypotenuse.", a: "25 cm" };
+questionBank.set2[2] = { q: "A fair die is rolled. Find P(getting an even number).", a: "1/2" };
+questionBank.set2[3] = { q: "Find the sum of the first 5 terms of 2, 4, 6, 8, …", a: "30" };
+questionBank.set2[4] = { q: "y is directly proportional to x. If y=24 when x=4, find y when x=6.", a: "36" };
+questionBank.set2[5] = { q: "Convert 150° to radians.", a: "5π/6" };
+questionBank.set2[6] = { q: "Find 18% of 150.", a: "27.0" };
+questionBank.set2[7] = { q: "An isosceles triangle has a vertex angle of 128°. Find each base angle.", a: "26" };
+questionBank.set2[8] = { q: "Share 80 in the ratio 7:3. What is the larger share?", a: "56" };
+questionBank.set2[9] = { q: "Evaluate (5^2).", a: "25" };
+questionBank.set2[10] = { q: "Find the HCF of 18 and 30.", a: "6" };
+questionBank.set2[11] = { q: "Find the LCM of 9 and 15.", a: "45" };
+questionBank.set2[12] = { q: "Integrate (3x² + 2) with respect to x.", a: "x³ + 2x + C" };
+questionBank.set2[13] = { q: "Find the gradient of the line through (2, 9) and (8, 3).", a: "-1" };
+questionBank.set2[14] = { q: "Differentiate y = 7x - 9.", a: "7" };
+questionBank.set2[15] = { q: "Find the LCM of 8 and 12.", a: "24" };
+questionBank.set2[16] = { q: "Differentiate y = 2x⁴ - x².", a: "dy/dx = 8x³ - 2x" };
+questionBank.set2[17] = { q: "Find the gradient of the line through (-1, 5) and (3, 13).", a: "2" };
+questionBank.set2[18] = { q: "There are 20 students; 12 study Art, 9 study Music, 4 study both. How many study at least one?", a: "17" };
+questionBank.set2[19] = { q: "Solve: x² - 9 = 0.", a: "x = ±3" };
+questionBank.set2[20] = { q: "Solve: x² - 5x + 6 = 0.", a: "x = 2 or 3" };
+questionBank.set2[21] = { q: "A right triangle has hypotenuse 17 cm and one side 8 cm. Find the other side.", a: "15 cm" };
+questionBank.set2[22] = { q: "A rectangle is 8 cm by 5 cm. Find its area.", a: "40 cm²" };
+questionBank.set2[23] = { q: "Differentiate y = 5x³.", a: "dy/dx = 15x²" };
+questionBank.set2[24] = { q: "Share 55 in the ratio 4:7. What is the larger share?", a: "35" };
+questionBank.set2[25] = { q: "Evaluate cos 0°.", a: "1" };
+questionBank.set2[26] = { q: "y is directly proportional to x. If y=35 when x=5, find y when x=7.", a: "49" };
+questionBank.set2[27] = { q: "Angles in a triangle are 58°, 73° and y°. Find y.", a: "49" };
+questionBank.set2[28] = { q: "Find 7.5% of 800.", a: "60.0" };
+questionBank.set2[29] = { q: "A triangle has base 12 cm and height 7 cm. Find its area.", a: "42 cm²" };
+questionBank.set2[30] = { q: "Find the HCF of 14 and 21.", a: "7" };
+questionBank.set2[31] = { q: "u = (7, 5), v = (2, 8). Find u - v.", a: "(5, -3)" };
+questionBank.set2[32] = { q: "Find the gradient of the line through (2, 7) and (6, 15).", a: "2" };
+questionBank.set2[33] = { q: "Factorise fully: 2x + 10.", a: "2(x + 5)" };
+questionBank.set2[34] = { q: "Evaluate cos 60°.", a: "0.5" };
+questionBank.set2[35] = { q: "Factorise fully: 4x + 12.", a: "4(x + 3)" };
+questionBank.set2[36] = { q: "Share 40 in the ratio 2:3. What is the larger share?", a: "24" };
+questionBank.set2[37] = { q: "y is inversely proportional to x. If y=9 when x=8, find y when x=4.", a: "18.0" };
+questionBank.set2[38] = { q: "A right triangle has shorter sides 3 cm and 4 cm. Find the hypotenuse.", a: "5 cm" };
+questionBank.set2[39] = { q: "A right triangle has shorter sides 6 cm and 8 cm. Find the hypotenuse.", a: "10 cm" };
+questionBank.set2[40] = { q: "Calculate 2/3 ÷ 4.", a: "1/6" };
+questionBank.set2[41] = { q: "Find the gradient of y = x² - 3x at x = 2.", a: "1" };
+questionBank.set2[42] = { q: "Expand and simplify: 4(x + 1) + 7x.", a: "11x + 4" };
+questionBank.set2[43] = { q: "Calculate 1/3 + 1/4.", a: "7/12" };
+questionBank.set2[44] = { q: "Find the magnitude of vector (3, 4).", a: "5" };
+questionBank.set2[45] = { q: "Evaluate 2^3 × 2^2.", a: "32" };
+questionBank.set2[46] = { q: "Find the 10th term of 4, 7, 10, 13, …", a: "31" };
+questionBank.set2[47] = { q: "u = (2, 3), v = (4, -1). Find u + v.", a: "(6, 2)" };
+questionBank.set2[48] = { q: "Solve: x² + 7x + 12 = 0.", a: "x = -3 or -4" };
+questionBank.set2[49] = { q: "Solve 2^x = 16.", a: "x = 4" };
+questionBank.set2[50] = { q: "A right triangle has hypotenuse 13 cm and one side 5 cm. Find the other side.", a: "12 cm" };
+questionBank.set2[51] = { q: "Evaluate tan 45°.", a: "1" };
+questionBank.set2[52] = { q: "Evaluate 3^4 ÷ 3^2.", a: "9" };
+questionBank.set2[53] = { q: "Evaluate 10^0.", a: "1" };
+questionBank.set2[54] = { q: "Find 25% of 360.", a: "90.0" };
+questionBank.set2[55] = { q: "Two parallel lines are cut by a transversal. One corresponding angle is 53°. Find the matching angle.", a: "53°" };
+questionBank.set2[56] = { q: "Factorise fully: 6x + 18.", a: "6(x + 3)" };
+questionBank.set2[57] = { q: "Find the gradient of the line through (1, 2) and (4, 11).", a: "3" };
+questionBank.set2[58] = { q: "Solve: 2(x + 4) = 18.", a: "x = 5" };
+questionBank.set2[59] = { q: "Differentiate y = 3x² + 4x - 7.", a: "dy/dx = 6x + 4" };
+questionBank.set2[60] = { q: "Find 12.5% of 480.", a: "60.0" };
+questionBank.set2[61] = { q: "Two angles on a straight line are 42° and x°. Find x.", a: "138" };
+questionBank.set2[62] = { q: "A circle has radius 7 cm. Find its circumference in terms of π.", a: "14π cm" };
+questionBank.set2[63] = { q: "Integrate 6x with respect to x.", a: "3x² + C" };
+questionBank.set2[64] = { q: "Evaluate 4^-1.", a: "1/4" };
+questionBank.set2[65] = { q: "Solve: x² - 4x = 0.", a: "x = 0 or 4" };
+questionBank.set2[66] = { q: "Expand and simplify: 2(x + 5) + 3x.", a: "5x + 10" };
+questionBank.set2[67] = { q: "y is directly proportional to x. If y=30 when x=12, find y when x=14.", a: "35.0" };
+questionBank.set2[68] = { q: "Factorise fully: 3x + 6.", a: "3(x + 2)" };
+questionBank.set2[69] = { q: "Find ∫₀² 2x dx.", a: "4" };
+questionBank.set2[70] = { q: "Find ∫₁³ 2 dx.", a: "4" };
+questionBank.set2[71] = { q: "Find the HCF of 24 and 36.", a: "12" };
+questionBank.set2[72] = { q: "An exterior angle of a triangle equals the sum of two opposite interior angles. They are 58° and 76°. Find the exterior angle.", a: "134°" };
+questionBank.set2[73] = { q: "Expand and simplify: 5(x + 2) + 4x.", a: "9x + 10" };
+questionBank.set2[74] = { q: "A trapezium has parallel sides 6 cm and 10 cm, height 4 cm. Find its area.", a: "32 cm²" };
+questionBank.set2[75] = { q: "Solve sin θ = 1/2 for 0° ≤ θ ≤ 180°.", a: "θ = 30° or 150°" };
+questionBank.set2[76] = { q: "Find the dot product of (2, 3) and (4, 1).", a: "11" };
+questionBank.set2[77] = { q: "A = {1,2,3,4}, B = {3,4,5}. Find A ∩ B.", a: "{3, 4}" };
+questionBank.set2[78] = { q: "Find 15% of 240.", a: "36.0" };
+questionBank.set2[79] = { q: "Share 64 in the ratio 3:5. What is the larger share?", a: "40" };
+questionBank.set2[80] = { q: "Solve: x/3 + 4 = 9.", a: "x = 15" };
+questionBank.set2[81] = { q: "A = {a,b,c}, B = {b,c,d}. Find A ∪ B.", a: "{a, b, c, d}" };
+questionBank.set2[82] = { q: "Calculate 5/6 - 1/3.", a: "1/2" };
+questionBank.set2[83] = { q: "y is inversely proportional to x. If y=8 when x=6, find y when x=3.", a: "16.0" };
+questionBank.set2[84] = { q: "Share 49 in the ratio 5:2. What is the larger share?", a: "35" };
+questionBank.set2[85] = { q: "Find the gradient of the line through (0, -2) and (5, 8).", a: "2" };
+questionBank.set2[86] = { q: "A cuboid measures 3 cm × 4 cm × 5 cm. Find its volume.", a: "60 cm³" };
+questionBank.set2[87] = { q: "If a = (1, 2), find 3a.", a: "(3, 6)" };
+questionBank.set2[88] = { q: "Solve: 3x + 5 = 20.", a: "x = 5" };
+questionBank.set2[89] = { q: "Calculate 0.75 as a fraction in simplest form.", a: "3/4" };
+questionBank.set2[90] = { q: "Solve: (x - 2)(x + 5) = 0.", a: "x = 2 or -5" };
+questionBank.set2[91] = { q: "Solve: 5x - 7 = 18.", a: "x = 5" };
+questionBank.set2[92] = { q: "If n(A)=15, n(B)=12 and n(A∩B)=5, find n(A∪B).", a: "22" };
+questionBank.set2[93] = { q: "Evaluate sin 30°.", a: "0.5" };
+questionBank.set2[94] = { q: "Calculate 3/5 × 10.", a: "6" };
+questionBank.set2[95] = { q: "Integrate 4x³ with respect to x.", a: "x⁴ + C" };
+questionBank.set2[96] = { q: "Expand and simplify: 3(x + 2) + 5x.", a: "8x + 6" };
+questionBank.set2[97] = { q: "Expand and simplify: 3(x + 4) + 6x.", a: "9x + 12" };
+questionBank.set2[98] = { q: "Solve: 7x = 3x + 24.", a: "x = 6" };
+questionBank.set2[99] = { q: "Factorise fully: 5x + 15.", a: "5(x + 3)" };
+
+//Soal untuk final
+questionBank.final[0] = { q: "Factorise fully: 4x + 12.", a: "4(x + 3)" };
+questionBank.final[1] = { q: "Share 40 in the ratio 2:3. What is the larger share?", a: "24" };
+questionBank.final[2] = { q: "Find the dot product of (2, 3) and (4, 1).", a: "11" };
+questionBank.final[3] = { q: "Find the gradient of the line through (-1, 5) and (3, 13).", a: "2" };
+questionBank.final[4] = { q: "Evaluate tan 45°.", a: "1" };
+questionBank.final[5] = { q: "Find the LCM of 8 and 12.", a: "24" };
+questionBank.final[6] = { q: "Solve: 2(x + 4) = 18.", a: "x = 5" };
+questionBank.final[7] = { q: "Solve: 3x + 5 = 20.", a: "x = 5" };
+questionBank.final[8] = { q: "Solve: (x - 2)(x + 5) = 0.", a: "x = 2 or -5" };
+questionBank.final[9] = { q: "Solve: 7x = 3x + 24.", a: "x = 6" };
+questionBank.final[10] = { q: "Find 18% of 150.", a: "27.0" };
+questionBank.final[11] = { q: "Solve: x² + 7x + 12 = 0.", a: "x = -3 or -4" };
+questionBank.final[12] = { q: "A rectangle is 8 cm by 5 cm. Find its area.", a: "40 cm²" };
+questionBank.final[13] = { q: "Differentiate y = 7x - 9.", a: "7" };
+questionBank.final[14] = { q: "Find the 10th term of 4, 7, 10, 13, …", a: "31" };
+questionBank.final[15] = { q: "Share 80 in the ratio 7:3. What is the larger share?", a: "56" };
+questionBank.final[16] = { q: "Share 49 in the ratio 5:2. What is the larger share?", a: "35" };
+questionBank.final[17] = { q: "Share 64 in the ratio 3:5. What is the larger share?", a: "40" };
+questionBank.final[18] = { q: "If a = (1, 2), find 3a.", a: "(3, 6)" };
+questionBank.final[19] = { q: "Calculate 5/6 - 1/3.", a: "1/2" };
+questionBank.final[20] = { q: "A right triangle has hypotenuse 17 cm and one side 8 cm. Find the other side.", a: "15 cm" };
+questionBank.final[21] = { q: "Differentiate y = 3x² + 4x - 7.", a: "dy/dx = 6x + 4" };
+questionBank.final[22] = { q: "Find the HCF of 14 and 21.", a: "7" };
+questionBank.final[23] = { q: "Expand and simplify: 4(x + 1) + 7x.", a: "11x + 4" };
+questionBank.final[24] = { q: "Two angles on a straight line are 58° and x°. Find x.", a: "122" };
+questionBank.final[25] = { q: "y is inversely proportional to x. If y=8 when x=6, find y when x=3.", a: "16.0" };
+questionBank.final[26] = { q: "Find 15% of 240.", a: "36.0" };
+questionBank.final[27] = { q: "Find the HCF of 24 and 36.", a: "12" };
+questionBank.final[28] = { q: "Find the magnitude of vector (3, 4).", a: "5" };
+questionBank.final[29] = { q: "Find the gradient of the line through (0, -2) and (5, 8).", a: "2" };
+questionBank.final[30] = { q: "Solve: x² - 5x + 6 = 0.", a: "x = 2 or 3" };
+questionBank.final[31] = { q: "Factorise fully: 5x + 15.", a: "5(x + 3)" };
+questionBank.final[32] = { q: "A cuboid measures 3 cm × 4 cm × 5 cm. Find its volume.", a: "60 cm³" };
+questionBank.final[33] = { q: "Integrate 6x with respect to x.", a: "3x² + C" };
+questionBank.final[34] = { q: "Differentiate y = 5x³.", a: "dy/dx = 15x²" };
+questionBank.final[35] = { q: "Evaluate 2^3 × 2^2.", a: "32" };
+questionBank.final[36] = { q: "Solve: 5x - 7 = 18.", a: "x = 5" };
+questionBank.final[37] = { q: "Integrate (3x² + 2) with respect to x.", a: "x³ + 2x + C" };
+questionBank.final[38] = { q: "Two parallel lines are cut by a transversal. One corresponding angle is 38°. Find the matching angle.", a: "38°" };
+questionBank.final[39] = { q: "Evaluate cos 0°.", a: "1" };
+questionBank.final[40] = { q: "A fair die is rolled. Find P(getting an even number).", a: "1/2" };
+questionBank.final[41] = { q: "If n(A)=15, n(B)=12 and n(A∩B)=5, find n(A∪B).", a: "22" };
+questionBank.final[42] = { q: "Evaluate (5^2).", a: "25" };
+questionBank.final[43] = { q: "Find 25% of 360.", a: "90.0" };
+questionBank.final[44] = { q: "Factorise fully: 3x + 6.", a: "3(x + 2)" };
+questionBank.final[45] = { q: "A = {1,2,3,4}, B = {3,4,5}. Find A ∩ B.", a: "{3, 4}" };
+questionBank.final[46] = { q: "Factorise fully: 2x + 10.", a: "2(x + 5)" };
+questionBank.final[47] = { q: "Find the LCM of 9 and 15.", a: "45" };
+questionBank.final[48] = { q: "Find the gradient of y = x² - 3x at x = 2.", a: "1" };
+questionBank.final[49] = { q: "Calculate 2/3 ÷ 4.", a: "1/6" };
+questionBank.final[50] = { q: "Expand and simplify: 3(x + 2) + 5x.", a: "8x + 6" };
+questionBank.final[51] = { q: "Factorise fully: 6x + 18.", a: "6(x + 3)" };
+questionBank.final[52] = { q: "Evaluate sin 90°.", a: "1" };
+questionBank.final[53] = { q: "Find the gradient of the line through (2, 9) and (8, 3).", a: "-1" };
+questionBank.final[54] = { q: "Evaluate 3^4 ÷ 3^2.", a: "9" };
+questionBank.final[55] = { q: "Find ∫₁³ 2 dx.", a: "4" };
+questionBank.final[56] = { q: "A triangle has base 12 cm and height 7 cm. Find its area.", a: "42 cm²" };
+questionBank.final[57] = { q: "Evaluate 10^0.", a: "1" };
+questionBank.final[58] = { q: "An isosceles triangle has a vertex angle of 142°. Find each base angle.", a: "19" };
+questionBank.final[59] = { q: "A right triangle has shorter sides 3 cm and 4 cm. Find the hypotenuse.", a: "5 cm" };
+questionBank.final[60] = { q: "Calculate 0.75 as a fraction in simplest form.", a: "3/4" };
+questionBank.final[61] = { q: "Evaluate cos 60°.", a: "0.5" };
+questionBank.final[62] = { q: "A right triangle has shorter sides 6 cm and 8 cm. Find the hypotenuse.", a: "10 cm" };
+questionBank.final[63] = { q: "Integrate 4x³ with respect to x.", a: "x⁴ + C" };
+questionBank.final[64] = { q: "y is directly proportional to x. If y=30 when x=12, find y when x=14.", a: "35.0" };
+questionBank.final[65] = { q: "Find 12.5% of 480.", a: "60.0" };
+questionBank.final[66] = { q: "Convert 150° to radians.", a: "5π/6" };
+questionBank.final[67] = { q: "Find the gradient of the line through (1, 2) and (4, 11).", a: "3" };
+questionBank.final[68] = { q: "A circle has radius 7 cm. Find its circumference in terms of π.", a: "14π cm" };
+questionBank.final[69] = { q: "Calculate 3/5 × 10.", a: "6" };
+questionBank.final[70] = { q: "A = {a,b,c}, B = {b,c,d}. Find A ∪ B.", a: "{a, b, c, d}" };
+questionBank.final[71] = { q: "Expand and simplify: 5(x + 2) + 4x.", a: "9x + 10" };
+questionBank.final[72] = { q: "Solve 2^x = 16.", a: "x = 4" };
+questionBank.final[73] = { q: "Expand and simplify: 3(x + 4) + 6x.", a: "9x + 12" };
+questionBank.final[74] = { q: "A trapezium has parallel sides 6 cm and 10 cm, height 4 cm. Find its area.", a: "32 cm²" };
+questionBank.final[75] = { q: "Evaluate sin 30°.", a: "0.5" };
+questionBank.final[76] = { q: "Solve: x² - 9 = 0.", a: "x = ±3" };
+questionBank.final[77] = { q: "Find the gradient of the line through (2, 7) and (6, 15).", a: "2" };
+questionBank.final[78] = { q: "Expand and simplify: 2(x + 5) + 3x.", a: "5x + 10" };
+questionBank.final[79] = { q: "y is inversely proportional to x. If y=9 when x=8, find y when x=4.", a: "18.0" };
+questionBank.final[80] = { q: "Find 7.5% of 800.", a: "60.0" };
+questionBank.final[81] = { q: "A right triangle has shorter sides 7 cm and 24 cm. Find the hypotenuse.", a: "25 cm" };
+questionBank.final[82] = { q: "Angles in a triangle are 53°, 68° and y°. Find y.", a: "59" };
+questionBank.final[83] = { q: "Share 55 in the ratio 4:7. What is the larger share?", a: "35" };
+questionBank.final[84] = { q: "Solve: x/3 + 4 = 9.", a: "x = 15" };
+questionBank.final[85] = { q: "Find the HCF of 18 and 30.", a: "6" };
+questionBank.final[86] = { q: "Find ∫₀² 2x dx.", a: "4" };
+questionBank.final[87] = { q: "Solve: x² - 4x = 0.", a: "x = 0 or 4" };
+questionBank.final[88] = { q: "Differentiate y = 2x⁴ - x².", a: "dy/dx = 8x³ - 2x" };
+questionBank.final[89] = { q: "Evaluate 4^-1.", a: "1/4" };
+questionBank.final[90] = { q: "An exterior angle of a triangle equals the sum of two opposite interior angles. They are 32° and 50°. Find the exterior angle.", a: "82°" };
+questionBank.final[91] = { q: "Solve sin θ = 1/2 for 0° ≤ θ ≤ 180°.", a: "θ = 30° or 150°" };
+questionBank.final[92] = { q: "There are 20 students; 12 study Art, 9 study Music, 4 study both. How many study at least one?", a: "17" };
+questionBank.final[93] = { q: "y is directly proportional to x. If y=35 when x=5, find y when x=7.", a: "49" };
+questionBank.final[94] = { q: "A right triangle has hypotenuse 13 cm and one side 5 cm. Find the other side.", a: "12 cm" };
+questionBank.final[95] = { q: "u = (7, 5), v = (2, 8). Find u - v.", a: "(5, -3)" };
+questionBank.final[96] = { q: "u = (2, 3), v = (4, -1). Find u + v.", a: "(6, 2)" };
+questionBank.final[97] = { q: "Find the sum of the first 5 terms of 2, 4, 6, 8, …", a: "30" };
+questionBank.final[98] = { q: "y is directly proportional to x. If y=24 when x=4, find y when x=6.", a: "36" };
+questionBank.final[99] = { q: "Calculate 1/3 + 1/4.", a: "7/12" };
+
+        // 2. GAME STATE
+        let currentCategoryIndex = 0;
+        let currentBoxIndex = null;
+        let timerInterval = null;
+        let timeLeft = 30;
+
+        // Save opened boxes state in browser LocalStorage
+        let openedBoxes = JSON.parse(localStorage.getItem('mathSnakeOpened')) || {
+            set1: [],
+            set2: [],
+            final: []
+        };
+
+        // 3. NAVIGATION FUNCTIONS
+        function openCategory(index) {
+            currentCategoryIndex = index;
+            document.getElementById('home-page').style.display = 'none';
+            document.getElementById('game-page').style.display = 'block';
+            renderGrid();
+        }
+
+        function goHome() {
+            document.getElementById('game-page').style.display = 'none';
+            document.getElementById('home-page').style.display = 'flex';
+        }
+
+        function navigateSet(direction) {
+            const newIndex = currentCategoryIndex + direction;
+            if (newIndex >= 0 && newIndex < categories.length) {
+                currentCategoryIndex = newIndex;
+                renderGrid();
+            }
+        }
+
+        // 4. RENDER 100 BOXES
+        function renderGrid() {
+            const cat = categories[currentCategoryIndex];
+            document.getElementById('category-title').innerText = cat.name;
+
+            // Toggle visibility for Previous/Next Set buttons
+            document.getElementById('btn-prev').style.visibility = currentCategoryIndex === 0 ? 'hidden' : 'visible';
+            document.getElementById('btn-next').style.visibility = currentCategoryIndex === categories.length - 1 ? 'hidden' : 'visible';
+
+            const container = document.getElementById('grid-container');
+            container.innerHTML = '';
+
+            for (let i = 0; i < 100; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'box';
+                btn.innerText = i + 1;
+
+                // Check if box was already opened
+                if (openedBoxes[cat.id].includes(i)) {
+                    btn.disabled = true;
+                } else {
+                    btn.onclick = () => openQuestion(i);
+                }
+
+                container.appendChild(btn);
+            }
+        }
+
+        // 5. OPEN QUESTION & 30-SECOND TIMER
+        function openQuestion(boxIndex) {
+            currentBoxIndex = boxIndex;
+            const cat = categories[currentCategoryIndex];
+            const data = questionBank[cat.id][boxIndex];
+
+            document.getElementById('modal-box-number').innerText = `${cat.name.toUpperCase()} — BOX #${boxIndex + 1}`;
+            document.getElementById('question-text').innerText = data.q;
+            
+            document.getElementById('panitia-controls').style.display = 'flex';
+            document.getElementById('result-banner').style.display = 'none';
+            document.getElementById('question-modal').style.display = 'flex';
+
+            // Permanently lock the box
+            openedBoxes[cat.id].push(boxIndex);
+            localStorage.setItem('mathSnakeOpened', JSON.stringify(openedBoxes));
+
+            // Start Timer
+            timeLeft = 30;
+            const timerEl = document.getElementById('timer-display');
+            timerEl.innerText = timeLeft;
+            timerEl.classList.remove('timer-danger');
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerEl.innerText = timeLeft;
+
+                if (timeLeft <= 5) {
+                    timerEl.classList.add('timer-danger');
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleResult('TIMEOUT');
+                }
+            }, 1000);
+        }
+
+        // 6. COMMITTEE RESULT HANDLER (CORRECT / INCORRECT / TIMEOUT)
+        function handleResult(status) {
+            clearInterval(timerInterval);
+            document.getElementById('panitia-controls').style.display = 'none';
+            
+            const banner = document.getElementById('result-banner');
+            banner.style.display = 'block';
+
+            if (status === 'CORRECT') {
+                banner.style.backgroundColor = '#dcfce7';
+                banner.style.color = '#166534';
+                banner.innerText = '🎉 CORRECT! Roll the Dice & Move Forward!';
+            } else if (status === 'INCORRECT') {
+                banner.style.backgroundColor = '#fee2e2';
+                banner.style.color = '#991b1b';
+                banner.innerText = '❌ INCORRECT! Cannot roll the dice.';
+            } else {
+                banner.style.backgroundColor = '#fef3c7';
+                banner.style.color = '#92400e';
+                banner.innerText = '⏰ TIME IS UP! Turn wasted.';
+            }
+
+            // Automatically close modal after 2.5 seconds and refresh grid
+            setTimeout(() => {
+                document.getElementById('question-modal').style.display = 'none';
+                renderGrid();
+            }, 2500);
+        }
+
+        // 7. RESET FEATURE
+        function resetCurrentSet() {
+            const cat = categories[currentCategoryIndex];
+            if (confirm(`Are you sure you want to reset all boxes for ${cat.name}?`)) {
+                openedBoxes[cat.id] = [];
+                localStorage.setItem('mathSnakeOpened', JSON.stringify(openedBoxes));
+                renderGrid();
+            }
+        }
+    </script>
+</body>
+</html>
