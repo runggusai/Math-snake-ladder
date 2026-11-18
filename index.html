@@ -4,27 +4,145 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Math Snake & Ladder</title>
-    <link rel="icon" type="image/png" href="sangkara_logo.png">
+    <link rel="icon" type="image/png" href="Math.png">
     <style>
         :root {
-            --primary: #2563eb;
-            --success: #16a34a;
-            --danger: #dc2626;
-            --dark: #1e293b;
-            --light: #f8fafc;
-        }
+    --logo-navy: #0f172a;
+    --logo-blue: #1e3a8a;
+    --primary: #2563eb;
+    --logo-cyan: #38bdf8;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --dark: #1e293b;
+    --light: #f8fafc;
+}
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--light);
-            color: var(--dark);
+            background: linear-gradient(
+                135deg,
+                var(--logo-navy) 0%,
+                var(--logo-blue) 55%,
+                var(--primary) 100%
+            );
+            color: var(--light);
             margin: 0;
-            padding: 20px;
+            padding: 0;
             display: flex;
             flex-direction: column;
-            align-items: center;
             min-height: 100vh;
         }
+
+        /* HEADER SEKOLAH */
+        header {
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .top-bar {
+            background: linear-gradient(
+                90deg,
+                var(--logo-navy),
+                var(--logo-blue),
+                var(--primary)
+            );
+            color: white;
+            padding: 10px 40px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 25px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            flex-wrap: wrap;
+        }
+
+        .top-bar a {
+            color: #e0f2fe;
+            text-decoration: none;
+        }
+
+.top-bar a:hover {
+    color: var(--logo-cyan);
+}
+
+.main-navbar {
+    background: white;
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.school-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-decoration: none;
+}
+
+.school-brand img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    border-radius: 50%;
+}
+
+.school-name {
+    color: var(--logo-navy);
+    font-weight: 800;
+    font-size: 1.15rem;
+    line-height: 1.2;
+}
+
+.school-name span {
+    display: block;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--primary);
+}
+
+.nav-links {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.nav-links a {
+    color: var(--dark);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+.nav-links a:hover {
+    color: var(--primary);
+}
+
+/* KONTEN UTAMA */
+.main-content {
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 10px;
+    color: white;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
 
         h1 { text-align: center; margin-bottom: 30px; }
 
@@ -38,9 +156,25 @@
             margin-top: 50px;
         }
 
+        #game-page {
+            display: none;
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .main-content {
+            padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
         .category-card {
-            background: white;
-            border: 3px solid var(--primary);
+            background: linear-gradient(145deg, #ffffff 0%, #e0f2fe 100%);
+            border: 3px solid var(--logo-cyan);
             border-radius: 15px;
             width: 280px;
             height: 200px;
@@ -49,17 +183,23 @@
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
             text-align: center;
             padding: 20px;
+            color: var(--logo-navy);
         }
 
         .category-card:hover {
             transform: translateY(-8px);
-            background-color: var(--primary);
-            color: white;
-            box-shadow: 0 10px 15px rgba(37, 99, 235, 0.3);
+            background: linear-gradient(
+                135deg,
+                var(--primary) 0%,
+                var(--logo-cyan) 100%
+            );
+            border-color: #ffffff;
+            color: #ffffff;
+            box-shadow: 0 12px 25px rgba(56, 189, 248, 0.45);
         }
 
         .category-card h2 { margin: 0 0 10px 0; font-size: 1.5rem; }
@@ -136,11 +276,13 @@
         .modal-overlay {
             display: none;
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            inset: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(0, 0, 0, 0.75);
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 9999;
         }
 
         .modal-content {
@@ -150,7 +292,9 @@
             width: 90%;
             max-width: 700px;
             text-align: center;
-            box-shadow: 0 20px 25px rgba(0,0,0,0.2);
+            color: #1e293b;
+            position: relative;
+            z-index: 10000;
         }
 
         .timer-badge {
@@ -179,10 +323,12 @@
         }
 
         .question-text {
+            display: block;
+            color: #1e293b;
             font-size: 1.8rem;
             font-weight: 600;
             margin: 25px 0;
-            line-height: 1.4;
+            line-height: 1.5;
         }
 
         .answer-key {
@@ -224,12 +370,95 @@
             border-radius: 10px;
             margin-top: 20px;
         }
+
+        @media (max-width: 768px) {
+
+        .top-bar {
+            justify-content: center;
+            padding: 10px;
+            gap: 12px;
+        }
+
+        .main-navbar {
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .nav-links {
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .nav-links a {
+            font-size: 0.7rem;
+        }
+
+        .grid-container {
+            gap: 5px;
+        }
+
+        .box {
+            font-size: 0.9rem;
+        }
+
+        .category-card {
+            width: 80%;
+            max-width: 280px;
+        }
+
+        .nav-header {
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+    }
     </style>
 </head>
+
 <body>
 
-    <!-- PAGE 1: CATEGORY SELECTION -->
-    <div id="home-page">
+    <!-- HEADER SEKOLAH -->
+    <header>
+
+        <!-- TOP BAR -->
+        <div class="top-bar">
+            <a href="#">Math Competition</a>
+            <a href="#">Student Portal</a>
+            <a href="#">Rules & Guide</a>
+            <a href="#">Leaderboard</a>
+        </div>
+
+        <!-- MAIN NAVBAR -->
+        <div class="main-navbar">
+
+            <a href="#" class="school-brand">
+                <img src="sangkara_logo.png" alt="Sangkara School">
+
+                <div class="school-name">
+                    Sangkara
+                    <span>Middle & High School</span>
+                </div>
+            </a>
+
+            <nav class="nav-links">
+                <a href="#">Home</a>
+                <a href="#">About Event ▾</a>
+                <a href="#">Elimination ▾</a>
+                <a href="#">Final Round ▾</a>
+                <a href="#">Contact</a>
+            </nav>
+
+        </div>
+    </header>
+
+    <!-- KONTEN UTAMA -->
+    <div class="main-content">
+
+        <h1>Math Snake & Ladder</h1>
+
+
+        <!-- PAGE 1: CATEGORY SELECTION -->
+        <div id="home-page">
         <div class="category-card" onclick="openCategory(0)">
             <h2>Elimination Round</h2>
             <p>SET 1</p>
@@ -260,23 +489,36 @@
     </div>
 
     <!-- QUESTION POP-UP MODAL -->
+    
     <div class="modal-overlay" id="question-modal">
         <div class="modal-content">
-            <div id="modal-box-number" style="font-weight: bold; color: #64748b;">BOX #1</div>
-            <div class="timer-badge" id="timer-display">30</div>
-            
-            <div class="question-text" id="question-text">Question will appear here...</div>
-            
-            <!-- Committee Answer Key Guide -->
-            <!-- Answer Key Hidden -->
-<div class="answer-key" id="answer-key" style="display: none;"></div>
+
+            <div id="modal-box-number">
+                BOX #1
+            </div>
+
+            <div class="timer-badge" id="timer-display">
+                30
+            </div>
+
+            <div class="question-text" id="question-text">
+                Question will appear here...
+            </div>
 
             <div class="action-buttons" id="panitia-controls">
-                <button class="btn-action btn-true" onclick="handleResult('CORRECT')">✅ CORRECT (Roll Dice)</button>
-                <button class="btn-action btn-false" onclick="handleResult('INCORRECT')">❌ INCORRECT (Stay)</button>
+                <button class="btn-action btn-true"
+                    onclick="handleResult('CORRECT')">
+                    ✅ CORRECT (Roll Dice)
+                </button>
+
+                <button class="btn-action btn-false"
+                    onclick="handleResult('INCORRECT')">
+                    ❌ INCORRECT (Stay)
+                </button>
             </div>
 
             <div id="result-banner"></div>
+
         </div>
     </div>
 
@@ -406,7 +648,8 @@ questionBank.set1 = [
   { q: "Integrate (4x² + 5) with respect to x.", a: "4x³/3 + 5x + C" },
   { q: "A = {2,3,5,7}, B = {1,3,5,9}. Find A ∩ B.", a: "{3, 5}" },
   { q: "Find the gradient of the line through (-2, 1) and (2, 9).", a: "2" },
-  { q: "Find the LCM of 10 and 16.", a: "80" }
+  { q: "Find the LCM of 10 and 16.", a: "80" },
+  { q: "Solve: 2x + 10 = 30.", a: "x = 10" }
 ];
 
 // Soal Set 2
@@ -682,29 +925,52 @@ questionBank.final = [
         }
 
         // 5. OPEN QUESTION & 30-SECOND TIMER
+        
         function openQuestion(boxIndex) {
             currentBoxIndex = boxIndex;
+
             const cat = categories[currentCategoryIndex];
             const data = questionBank[cat.id][boxIndex];
 
-            document.getElementById('modal-box-number').innerText = `${cat.name.toUpperCase()} — BOX #${boxIndex + 1}`;
+            // Cek apakah soal tersedia
+            if (!data || !data.q) {
+                alert("Question not found!");
+                return;
+            }
+
+            document.getElementById('modal-box-number').innerText =
+                `${cat.name.toUpperCase()} — BOX #${boxIndex + 1}`;
+
+            // Tampilkan pertanyaan
             document.getElementById('question-text').innerText = data.q;
-            
-            document.getElementById('panitia-controls').style.display = 'flex';
-            document.getElementById('result-banner').style.display = 'none';
+
+            // Tampilkan modal
             document.getElementById('question-modal').style.display = 'flex';
 
-            // Permanently lock the box
-            openedBoxes[cat.id].push(boxIndex);
-            localStorage.setItem('mathSnakeOpened', JSON.stringify(openedBoxes));
+            // Tampilkan tombol panitia
+            document.getElementById('panitia-controls').style.display = 'flex';
 
-            // Start Timer
+            // Sembunyikan hasil sebelumnya
+            document.getElementById('result-banner').style.display = 'none';
+
+            // Tandai kotak sudah dibuka
+            if (!openedBoxes[cat.id].includes(boxIndex)) {
+                openedBoxes[cat.id].push(boxIndex);
+                localStorage.setItem(
+                    'mathSnakeOpened',
+                    JSON.stringify(openedBoxes)
+                );
+            }
+
+            // Mulai timer
             timeLeft = 30;
+
             const timerEl = document.getElementById('timer-display');
             timerEl.innerText = timeLeft;
             timerEl.classList.remove('timer-danger');
 
             clearInterval(timerInterval);
+
             timerInterval = setInterval(() => {
                 timeLeft--;
                 timerEl.innerText = timeLeft;
@@ -758,6 +1024,16 @@ questionBank.final = [
                 renderGrid();
             }
         }
-    </script>
+
+        // CEK JUMLAH SOAL
+        console.log("Set 1:", questionBank.set1.length);
+        console.log("Set 2:", questionBank.set2.length);
+        console.log("Final:", questionBank.final.length);
+        </script>
+
+    </div>
+    <!-- AKHIR MAIN CONTENT -->
+
 </body>
+</html>
 </html>
